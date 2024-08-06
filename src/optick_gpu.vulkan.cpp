@@ -397,13 +397,21 @@ namespace Optick
 	{
 		for (NodePayload* payload : nodePayloads)
 		{
-			for (Frame& frame : payload->frames)
+			if (payload)
 			{
-				(*vulkanFunctions.vkDestroyFence)(payload->device, frame.fence, nullptr);
-				(*vulkanFunctions.vkFreeCommandBuffers)(payload->device, payload->commandPool, 1, &frame.commandBuffer);
-			}
+				for (Frame& frame : payload->frames)
+				{
+					if (payload->device)
+					{
+						if (frame.fence)
+							(*vulkanFunctions.vkDestroyFence)(payload->device, frame.fence, nullptr);
+						if (payload->commandPool)
+							(*vulkanFunctions.vkFreeCommandBuffers)(payload->device, payload->commandPool, 1, &frame.commandBuffer);
+					}
+				}
 
-			Memory::Delete(payload);
+				Memory::Delete(payload);
+			}
 		}
 
 		nodePayloads.clear();
